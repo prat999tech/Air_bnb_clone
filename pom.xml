@@ -68,8 +68,21 @@
 			<artifactId>spring-boot-starter-webmvc-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+
+		<dependency>
+    <groupId>org.modelmapper</groupId>
+    <artifactId>modelmapper</artifactId>
+    <version>3.2.6</version>
+</dependency>
 	
    
+ 
+   <dependency>
+     <groupId>com.microsoft.azure.cognitiveservices</groupId>
+     <artifactId>azure-cognitiveservices-entitysearch</artifactId>
+     <version>1.0.2</version>
+   </dependency>
  </dependencies>
 
 	<build>

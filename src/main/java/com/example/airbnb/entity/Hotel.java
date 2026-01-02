@@ -11,6 +11,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -70,5 +71,10 @@ public class Hotel {
 
     @Column(nullable = false)
     private Boolean active;
+
+    // every hotel can have one owner but one owner can be a owner of a multiple
+    // hotel
+    @ManyToOne
+    private user owner;
 
 }
