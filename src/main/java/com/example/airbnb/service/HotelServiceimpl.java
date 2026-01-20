@@ -3,9 +3,18 @@ package com.example.airbnb.service;
 import org.springframework.stereotype.Service;
 
 import com.example.airbnb.dto.HotelDto;
+import com.example.airbnb.dto.HotelinfoDto;
+import com.example.airbnb.dto.RoomDto;
 import com.example.airbnb.entity.Hotel;
+import com.example.airbnb.entity.Room;
 import com.example.airbnb.exception.resoucenotfoundexception;
 import com.example.airbnb.repository.HotelRepository;
+import com.example.airbnb.repository.RoomRepository;
+
+import jakarta.transaction.Transactional;
+
+import java.util.List;
+
 import org.modelmapper.ModelMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -22,8 +31,11 @@ public class HotelServiceimpl implements HotelService {
     // @RequiredArgsConstructor will create a constructor for this as
     // @RequiredArgsConstructor creates a constructor for all fields
     private final ModelMapper modelMapper;
+    private final InventoryService inventoryService;
+    private final RoomRepository roomRepository;
 
     @Override
+    @Transactional
     public HotelDto createNewHotel(HotelDto hotelDto) {
         log.info("creating new hotel", hotelDto.getName());
         Hotel hotel = modelMapper.map(hotelDto, Hotel.class); // mapping HotelDto to Hotel entity
@@ -34,6 +46,7 @@ public class HotelServiceimpl implements HotelService {
     }
 
     @Override
+    @Transactional
     public HotelDto getHotelById(Long id) {
         log.info("getting hotel by id: {}", id);
         Hotel hotel = hotelRepository.findById(id)
@@ -42,6 +55,7 @@ public class HotelServiceimpl implements HotelService {
     }
 
     @Override
+    @Transactional
     public HotelDto updateHotel(HotelDto hotelDto, Long id) {
         log.info("getting the hotel with the id: {}", id);
         Hotel hotel = hotelRepository.findById(id)
@@ -70,18 +84,25 @@ public class HotelServiceimpl implements HotelService {
     }
 
     @Override
+    @Transactional
     public Boolean deleteHotelById(Long id) {
         log.info("deleting the hotel with the id: {}", id);
         Hotel hotel = hotelRepository.findById(id)
                 .orElseThrow(() -> new resoucenotfoundexception("Hotel not found with id: " + id));
-        hotelRepository.delete(hotel);
 
-        // todo:delete all rooms and inventories associated with this hotel
         log.info("hotel deleted with id: {}", id);
+        for (Room room : hotel.getRooms()) {
+            inventoryService.deletefutureinventoryofroom(room);
+            roomRepository.deleteById(room.getId());
+        }
+        hotelRepository.deleteById(id);
+
         return true;
     }
 
     @Override
+    @Transactional
+
     public void activateHotel(Long hotelId) {
         log.info("activating the hotel with the id: {}", hotelId);
         Hotel hotel = hotelRepository.findById(hotelId)
@@ -89,7 +110,24 @@ public class HotelServiceimpl implements HotelService {
         hotel.setActive(true);
         hotelRepository.save(hotel);
         log.info("hotel activated with id: {}", hotelId);
-        // todo:create inventory fo all the room for thiis hotel
+        for (Room room : hotel.getRooms()) {
+            inventoryService.initiliazeroomforayear(room);
+        } // this is how we activate a room that if my hotel is activated then only the
+          // rooms associated with that hotel will be activated and inventory will be
+          // created for those rooms
+
+    }
+
+    @Override
+    public HotelinfoDto getHotelInfoById(Long hotelId) {
+        Hotel hotel = hotelRepository.findById(hotelId)
+                .orElseThrow(() -> new resoucenotfoundexception("Hotel not found with id: " + hotelId));
+        List<RoomDto> rooms = hotel.getRooms()
+                .stream()
+                .map(room -> modelMapper.map(room, RoomDto.class)).toList();
+        return new HotelinfoDto(
+                modelMapper.map(hotel, HotelDto.class),
+                rooms);
 
     }
 

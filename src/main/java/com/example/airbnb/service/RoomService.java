@@ -5,7 +5,7 @@ import java.util.List;
 import com.example.airbnb.dto.RoomDto;
 
 public interface RoomService {
-    RoomDto createNewRoom(RoomDto roomDto);
+    RoomDto createNewRoom(long hotelId, RoomDto roomDto);
 
     List<RoomDto> getAllRoomsInHotel(Long hotelId);
 

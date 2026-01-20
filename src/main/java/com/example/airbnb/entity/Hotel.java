@@ -1,6 +1,7 @@
 package com.example.airbnb.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -12,6 +13,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -76,5 +78,10 @@ public class Hotel {
     // hotel
     @ManyToOne
     private user owner;
+    @OneToMany(mappedBy = "hotel") // "Don't create a new column for me. I am just looking at the column that
+                                   // already exists." so to get all rooms in a hotel we explicitly tell that the
+                                   // mapping is done by hotel field in room entity and we can explicitly call
+                                   // hotel.getRooms() to get all rooms in that hotel
+    private List<Room> rooms;
 
 }
