@@ -1,13 +1,15 @@
 package com.example.airbnb.dto;
 
+import java.time.LocalDate;
+
 import lombok.Data;
 
 @Data
 public class BookingRequest {
     private Long hotelId;
     private Long roomId;
-    private String checkInDate;
-    private String checkOutDate;
+    private LocalDate checkInDate;
+    private LocalDate checkOutDate;
     private Integer roomsCount;
 
 }

@@ -7,14 +7,14 @@ import com.example.airbnb.dto.BookingDto;
 import com.example.airbnb.dto.BookingRequest;
 import com.example.airbnb.service.BookingService;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
-@AllArgsConstructor
+@RequiredArgsConstructor
 @RequestMapping("/bookings")
 public class HotelBookingController {
     private final BookingService bookingService;
