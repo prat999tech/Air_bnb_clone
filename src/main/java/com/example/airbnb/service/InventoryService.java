@@ -2,7 +2,7 @@ package com.example.airbnb.service;
 
 import org.springframework.data.domain.Page;
 
-import com.example.airbnb.dto.HotelDto;
+import com.example.airbnb.dto.HotelPrice;
 import com.example.airbnb.dto.Hotelsearch;
 import com.example.airbnb.entity.Room;
 
@@ -15,5 +15,5 @@ public interface InventoryService {
     void deletefutureinventoryofroom(Room room); // when a room is deactivated we have to delete all the future
                                                  // inventory of that room
 
-    Page<HotelDto> searchHotels(Hotelsearch hotelsearchrequest);
+    Page<HotelPrice> searchHotels(Hotelsearch hotelsearchrequest);
 }

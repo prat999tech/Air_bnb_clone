@@ -4,12 +4,13 @@ import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-import org.apache.catalina.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.airbnb.dto.BookingDto;
 import com.example.airbnb.dto.BookingRequest;
+import com.example.airbnb.dto.Guestdto;
+import com.example.airbnb.entity.Guest;
 import com.example.airbnb.entity.Hotel;
 import com.example.airbnb.entity.Inventory;
 import com.example.airbnb.entity.Room;
@@ -18,6 +19,7 @@ import com.example.airbnb.entity.user;
 import com.example.airbnb.entity.enumsrole.bookingStatus;
 import com.example.airbnb.exception.resoucenotfoundexception;
 import com.example.airbnb.repository.BookingRepository;
+import com.example.airbnb.repository.GuestRepository;
 import com.example.airbnb.repository.HotelRepository;
 import com.example.airbnb.repository.InventoryRepository;
 import com.example.airbnb.repository.RoomRepository;
@@ -36,6 +38,7 @@ public class BookingServiceimpl implements BookingService {
         private final RoomRepository roomRepository;
         private final InventoryRepository inventoryRepository;
         private final ModelMapper modelMapper;
+        private final GuestRepository guestRepository;
 
         @Override
         @Transactional
@@ -68,21 +71,21 @@ public class BookingServiceimpl implements BookingService {
                 }
                 // reserve the rooms by updating the booked count of inventories
                 for (Inventory inventory : inventories) {
-                        inventory.setBookedCount(inventory.getReservedCount() + bookingRequest.getRoomsCount());
+                        inventory.setReservedCount(inventory.getReservedCount() + bookingRequest.getRoomsCount());
                 }
                 inventoryRepository.saveAll(inventories);
 
                 // create a booking
 
-                user users = new user(); // Assuming you have a User entity and you can get the user details
-                users.setId(1l); // TODO: remove the dummy user and get user using spring security
+                // Assuming you have a User entity and you can get the user details
+                // TODO: remove the dummy user and get user using spring security
                 // TODO:calculate the dynamic pricing
 
                 booking bookings = booking.builder()
                                 .bookingStatus(bookingStatus.COMPLETED)
                                 .hotel(hotel)
                                 .room(room)
-                                .user(users)
+                                .user(getCurrentUser())
                                 .checkInDate(bookingRequest.getCheckInDate())
                                 .checkOutDate(bookingRequest.getCheckOutDate())
                                 .roomsCount(bookingRequest.getRoomsCount())
@@ -97,4 +100,51 @@ public class BookingServiceimpl implements BookingService {
          // and out time out time will be 20 mintues and we used "reservedCount" in
          // inventory to lock the room
 
+        @Override
+        @Transactional
+        public BookingDto addGuest(Long bookingId, List<Guestdto> guestDto) {
+                log.info("Adding guests to booking with id: {}", bookingId);
+                booking bookings = bookingRepository.findById(bookingId).orElseThrow(
+                                () -> new resoucenotfoundexception("Booking not found with id: " + bookingId));
+
+                // now before adding guest we have to check if booking is expired or not if
+                // expired then we have to throw exception
+
+                if (hasBookingExpired(bookings)) {
+                        log.error("Booking with id: {} has expired.", bookingId);
+                        throw new IllegalStateException("Booking has expired.");
+                }
+
+                if (bookings.getBookingStatus() != bookingStatus.COMPLETED) {
+                        log.error("Cannot add guests to booking with id: {} as its status is not COMPLETED.",
+                                        bookingId);
+                        throw new IllegalStateException("Cannot add guests to a booking that is not COMPLETED.");
+                }
+
+                for (Guestdto guests : guestDto) {
+                        Guest guest = modelMapper.map(guests, Guest.class);
+                        guest.setUser(getCurrentUser());
+                        guest = guestRepository.save(guest);
+                        bookings.getGuests().add(guest);
+
+                }
+                booking updatedBooking = bookingRepository.save(bookings);
+                log.info("Guests added successfully to booking with id: {}", bookingId);
+                updatedBooking.setBookingStatus(bookingStatus.GUEST_ADDED);
+                return modelMapper.map(updatedBooking, BookingDto.class);
+
+        }
+
+        public boolean hasBookingExpired(booking bookings) {
+                return bookings.getCreatedAt().plusMinutes(20).isBefore(java.time.LocalDateTime.now());
+        }
+
+        public user getCurrentUser() {
+                // Implement this method to retrieve the currently logged-in user
+                user users = new user(); // Assuming you have a User entity and you can get the user details
+                users.setId(1l);
+                return users;
+
+                // TODO: remove the dummy user and get user using spring security
+        }
 }

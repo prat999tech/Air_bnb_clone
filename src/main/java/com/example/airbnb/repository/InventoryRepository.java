@@ -18,36 +18,39 @@ import com.example.airbnb.entity.Room;
 import jakarta.persistence.LockModeType;
 
 public interface InventoryRepository extends JpaRepository<Inventory, Long> {
-    void deleteByDateAfterAndRoom(LocalDate date, Room room);
+        void deleteByDateAfterAndRoom(LocalDate date, Room room);
 
-    @Query("SELECT DISTINCT i.Hotel FROM Inventory i"
-            + " WHERE i.city = :city"
-            + " AND i.date BETWEEN :startdate AND :enddate"
-            + " AND i.closed = false"
-            + "AND (i.totalCount - i.bookedCount) >= :roomsCount"
-            + " GROUP BY i.Hotel, i.room"
-            + " HAVING COUNT(i.date) = :datecount")
-    Page<Hotel> findhotelwithavailableinventory(
-            @Param("city") String city,
-            @Param("startdate") LocalDate startdate,
-            @Param("enddate") LocalDate enddate,
-            @Param("roomsCount") Integer roomsCount,
-            @Param("datecount") Integer datecount,
-            Pageable peagble
+        @Query("SELECT DISTINCT i.Hotel FROM Inventory i"
+                        + " WHERE i.city = :city"
+                        + " AND i.date BETWEEN :startdate AND :enddate"
+                        + " AND i.closed = false"
+                        + "AND (i.totalCount - i.bookedCount - i.reservedCount) >= :roomsCount"
+                        + " GROUP BY i.Hotel, i.room"
+                        + " HAVING COUNT(i.date) = :datecount")
+        Page<Hotel> findhotelwithavailableinventory(
+                        @Param("city") String city,
+                        @Param("startdate") LocalDate startdate,
+                        @Param("enddate") LocalDate enddate,
+                        @Param("roomsCount") Integer roomsCount,
+                        @Param("datecount") Integer datecount,
+                        Pageable peagble
 
-    );
+        );
 
-    @Query("SELECT i FROM Inventory i"
-            + " WHERE i.room.id = :roomId"
-            + " AND i.date BETWEEN :startDate AND :endDate"
-            + " AND i.closed = false"
-            + " AND (i.totalCount - i.bookedCount) >= :roomsCount")
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    List<Inventory> findAndLockAvailableInventory(
-            @Param("roomId") Long roomId,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate,
-            @Param("roomsCount") Integer roomsCount);
+        // we are using reserved count while booking service is underprocess
+        @Query("SELECT i FROM Inventory i"
+                        + " WHERE i.room.id = :roomId"
+                        + " AND i.date BETWEEN :startDate AND :endDate"
+                        + " AND i.closed = false"
+                        + " AND (i.totalCount - i.bookedCount - i.reservedCount) >= :roomsCount")
+        @Lock(LockModeType.PESSIMISTIC_WRITE)
+        List<Inventory> findAndLockAvailableInventory(
+                        @Param("roomId") Long roomId,
+                        @Param("startDate") LocalDate startDate,
+                        @Param("endDate") LocalDate endDate,
+                        @Param("roomsCount") Integer roomsCount);
+
+        List<Inventory> findByHotelAndDateBetween(Hotel hotel, LocalDate startDate, LocalDate endDate);
 
 }
 

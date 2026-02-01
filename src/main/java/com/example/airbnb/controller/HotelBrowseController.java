@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.airbnb.dto.HotelDto;
+import com.example.airbnb.dto.HotelPrice;
 import com.example.airbnb.dto.HotelinfoDto;
 import com.example.airbnb.dto.Hotelsearch;
 import com.example.airbnb.service.HotelService;
@@ -29,8 +30,8 @@ public class HotelBrowseController {
     private final HotelService hotelService;
 
     @GetMapping("/search")
-    public ResponseEntity<Page<HotelDto>> searchHotels(@RequestBody Hotelsearch hotelsearchrequest) {
-        Page<HotelDto> page = inventoryService.searchHotels(hotelsearchrequest);
+    public ResponseEntity<Page<HotelPrice>> searchHotels(@RequestBody Hotelsearch hotelsearchrequest) {
+        Page<HotelPrice> page = inventoryService.searchHotels(hotelsearchrequest);
         return ResponseEntity.ok(page);
     }
 
