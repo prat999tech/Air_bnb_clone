@@ -15,7 +15,7 @@ import com.example.airbnb.entity.HotelMinPrice;
 
 public interface HotelMinPriceRepository extends JpaRepository<HotelMinPrice, Long> {
 
-    @Query("SELECT com.example.airbnb.dto.HotelPrice(i.hotel, AVG(i.price)) FROM HotelMinPrice i"
+    @Query("SELECT new com.example.airbnb.dto.HotelPrice(i.hotel, AVG(i.price)) FROM HotelMinPrice i"
             + " WHERE i.hotel.city = :city"
             + " AND i.date BETWEEN :startdate AND :enddate"
             + " AND i.hotel.active = true"

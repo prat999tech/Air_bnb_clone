@@ -20,12 +20,11 @@ import jakarta.persistence.LockModeType;
 public interface InventoryRepository extends JpaRepository<Inventory, Long> {
         void deleteByDateAfterAndRoom(LocalDate date, Room room);
 
-        @Query("SELECT DISTINCT i.Hotel FROM Inventory i"
+        @Query("SELECT DISTINCT i.hotel FROM Inventory i"
                         + " WHERE i.city = :city"
                         + " AND i.date BETWEEN :startdate AND :enddate"
-                        + " AND i.closed = false"
-                        + "AND (i.totalCount - i.bookedCount - i.reservedCount) >= :roomsCount"
-                        + " GROUP BY i.Hotel, i.room"
+                        + " AND i.closed = false AND (i.totalCount - i.bookedCount - i.reservedCount) >= :roomsCount"
+                        + " GROUP BY i.hotel, i.room"
                         + " HAVING COUNT(i.date) = :datecount")
         Page<Hotel> findhotelwithavailableinventory(
                         @Param("city") String city,

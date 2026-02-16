@@ -1,7 +1,6 @@
 package com.example.airbnb.dto;
 
 import com.example.airbnb.entity.Hotel;
-import com.example.airbnb.repository.HotelRepository;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;

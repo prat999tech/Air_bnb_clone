@@ -79,7 +79,6 @@ public class BookingServiceimpl implements BookingService {
 
                 // Assuming you have a User entity and you can get the user details
                 // TODO: remove the dummy user and get user using spring security
-                // TODO:calculate the dynamic pricing
 
                 booking bookings = booking.builder()
                                 .bookingStatus(bookingStatus.COMPLETED)
